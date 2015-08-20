@@ -205,15 +205,16 @@ markAsTransformation(SgNode *ast) {
 }
 
 // Main inliner code.  Accepts a function call as a parameter, and inlines
-// only that single function call.  Returns true if it succeeded, and false
-// otherwise.  The function call must be to a named function, static member
+// only that single function call.  Returns the inserted block
+// if inlining succeeded, and NULL otherwise.
+// The function call must be to a named function, static member
 // function, or non-virtual non-static member function, and the function
 // must be known (not through a function pointer or member function
 // pointer).  Also, the body of the function must already be visible.
 // Recursive procedures are handled properly (when allowRecursion is set), by
 // inlining one copy of the procedure into itself.  Any other restrictions on
 // what can be inlined are bugs in the inliner code.
-bool
+SgBasicBlock*
 doInline(SgFunctionCallExp* funcall, bool allowRecursion)
    {
 #if 0
@@ -263,7 +264,7 @@ doInline(SgFunctionCallExp* funcall, bool allowRecursion)
      if (!funname2)
         {
        // std::cout << "Inline failed: not a call to a named function" << std::endl;
-          return false; // Probably a call through a fun ptr
+          return NULL; // Probably a call through a fun ptr
         }
 
      SgFunctionSymbol* funsym = 0;
@@ -280,7 +281,7 @@ doInline(SgFunctionCallExp* funcall, bool allowRecursion)
          isSgMemberFunctionSymbol(funsym)->get_declaration()->get_functionModifier().isVirtual())
         {
        // std::cout << "Inline failed: cannot inline virtual member functions" << std::endl;
-          return false;
+          return NULL;
         }
 
      SgFunctionDeclaration* fundecl = funsym->get_declaration();
@@ -290,7 +291,7 @@ doInline(SgFunctionCallExp* funcall, bool allowRecursion)
      if (!fundef)
         {
        // std::cout << "Inline failed: no definition is visible" << std::endl;
-          return false; // No definition of the function is visible
+          return NULL; // No definition of the function is visible
         }
      if (!allowRecursion)
         {
@@ -307,7 +308,7 @@ doInline(SgFunctionCallExp* funcall, bool allowRecursion)
           if (isSgFunctionDefinition(my_fundef) == fundef)
              {
                std::cout << "Inline failed: trying to inline a procedure into itself" << std::endl;
-               return false;
+               return NULL;
              }
         }
 
@@ -540,5 +541,5 @@ doInline(SgFunctionCallExp* funcall, bool allowRecursion)
   // Mark the things we insert as being transformations so they get inserted into the output by backend()
      markAsTransformation(funbody_copy);
 
-     return true;
+     return funbody_copy;
    }

@@ -269,7 +269,7 @@ HEADER_SCOPE_STATEMENT_START
           friend class TestAstSymbolTables;
 
        // DQ (5/21/2013): Support for the inliner.
-          friend bool doInline(SgFunctionCallExp* funcall, bool allowRecursion);
+          friend SgBasicBlock* doInline(SgFunctionCallExp* funcall, bool allowRecursion);
           friend class FlattenBlocksVisitor;
           friend class RenameVariablesVisitor;
           friend class RenameLabelsVisitor;
